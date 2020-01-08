@@ -1,0 +1,141 @@
+---
+title: "PixelsAndPoints_LIDAR"
+author: "Ben Ortiz Ulloa"
+date: "12/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(magrittr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Data
+
+```{r}
+h2015 <- lidR::readLAS('../Assets/Lidar_Data/h2015_wide.las')
+h2018 <- lidR::readLAS('../Assets/Lidar_Data/h2018_wide.las')
+```
+
+# Plot provides a 3d image
+
+```{r}
+# Plot interactive 3d image
+# will render in a new window
+lidR::plot(h2015, color = 'Intensity')
+
+# Manipulate the image programatically
+rgl::view3d(userMatrix = rgl::rotate3d(rgl::par3d("userMatrix"),
+                                       (45 * pi / 180), 
+                                       0,
+                                       0, 
+                                       1),
+            zoom = .5)
+
+# take a snapshot 2d image
+rayshader::render_snapshot()
+
+# remove 3d interactive image
+rgl::rgl.close()
+```
+
+```{r}
+lidR::plot(h2018, color = 'Intensity')
+rgl::view3d(userMatrix = rgl::rotate3d(rgl::par3d("userMatrix"),
+                                       (45 * pi / 180), 
+                                       0,
+                                       0, 
+                                       1),
+            zoom = .5)
+rayshader::render_snapshot()
+rgl::rgl.close()
+```
+
+# Convert to 2d for analysis
+
+```{r}
+# digital surface modal provides the top most points. resolution is 1 square meter
+dsm2015 <- lidR::grid_canopy(h2015, res = 1.5, algorithm = lidR::p2r())
+raster::plot(dsm2015, col = gray.colors(10))
+```
+
+```{r}
+dsm2018 <- lidR::grid_canopy(h2018, 1.5, lidR::p2r())
+raster::plot(dsm2018, col = gray.colors(10))
+```
+
+# Find areas of interest with raster math
+
+```{r}
+dsm_diff <- dsm2018 - dsm2015
+dsm_diff[dsm_diff < -100] <- -100
+raster::plot(dsm_diff)
+```
+
+# Lower Resolution to see general areas of interest
+
+```{r}
+dsm_diff_agg <- raster::aggregate(abs(dsm_diff), 50)
+raster::plot(dsm_diff_agg)
+```
+
+# Determine threshold of "interesting"
+
+```{r}
+main_diff <- dsm_diff_agg
+main_diff[main_diff < 10] <- NA
+raster::plot(main_diff)
+```
+
+# Create a simple feature of area of interest to use for clipping
+
+```{r}
+main_diff_poly <- raster::rasterToPolygons(main_diff) %>%
+  sf::st_as_sf() 
+
+main_diff_poly
+```
+
+# We use bbox to clip
+
+```{r}
+main_diff_bbox <- sf::st_bbox(main_diff_poly)
+  
+main_diff_bbox
+```
+
+# Clipping the lidr data with bbox, needs a matrix
+
+```{r}
+matrix(main_diff_bbox, ncol = 2)
+```
+
+```{r}
+aoi2015 <- lidR::lasclip(h2015, matrix(main_diff_bbox, ncol = 2))
+```
+
+```{r}
+lidR::plot(aoi2015, color = 'Intensity')
+rgl::view3d(userMatrix = rgl::rotate3d(rgl::par3d("userMatrix"),
+                                       (45 * pi / 180), 
+                                       0,
+                                       0, 
+                                       1))
+rayshader::render_snapshot()
+rgl::rgl.close()
+```
+
+```{r}
+aoi2018 <- lidR::lasclip(h2018, matrix(main_diff_bbox, ncol = 2))
+```
+
+```{r}
+lidR::plot(aoi2018, color = 'Intensity')
+rgl::view3d(userMatrix = rgl::rotate3d(rgl::par3d("userMatrix"),
+                                       (45 * pi / 180), 
+                                       0,
+                                       0, 
+                                       1))
+rayshader::render_snapshot()
+rgl::rgl.close()
+```
