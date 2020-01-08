@@ -10,7 +10,7 @@ install.packages(c('dplyr', 'knitr', 'lidR', 'magrittr', 'raster', 'rayshader', 
 
 ## Data
 
-Contains data used in the tutorial. **Must unzip Crashes_in_DC.zip and Lidar_Data.zip
+Contains data used in the tutorial. **Must unzip Crashes_in_DC.zip and Lidar_Data.zip**
 
 ## PixelsAndPoints_statsem.pptx
 
