@@ -354,7 +354,7 @@ raster::plotRGB(wh_zoom)
 ```
 
 ```{r}
-crashes <- sf::read_sf('../Assets/Crashes_in_DC/Crashes_in_DC.shp')
+crashes <- sf::read_sf('../Assets/Crashes_in_DC/crashes_reduced.gpkg')
 ```
 
 
@@ -374,7 +374,7 @@ wh_crashes <- crashes %>%
 wh_gray <- wh[[1]] + wh[[2]] + wh[[3]]
 
 raster::plot(wh_gray, col = gray.colors(100))
-plot(wh_crashes$geometry, add = T, pch = 21, bg = 'red', cex =.5)
+plot(wh_crashes$geom, add = T, pch = 21, bg = 'red', cex =.5)
 ```
 
 
@@ -385,7 +385,7 @@ raster::plot(crash, col = rev(heat.colors(50)))
 ```
 
 ```{r}
-crash_agg <- raster::aggregate(crash, 20) 
+crash_agg <- raster::aggregate(crash, 20, fun = sum) 
 
 raster::plot(crash_agg, col = rev(heat.colors(50)))
 ```
@@ -393,8 +393,8 @@ raster::plot(crash_agg, col = rev(heat.colors(50)))
 
 ```{r}
 danger_zone <- crash_agg >= quantile(raster::values(crash_agg), 
-                                               .95, 
-                                               na.rm = T)
+                                     .95, 
+                                     na.rm = T)
 
 crash_agg[!danger_zone] <- NA
 
@@ -420,13 +420,13 @@ highest_crash_area <- crash_shape %>%
 crashes_in_area <- wh_crashes %>% 
   dplyr::filter(sf::st_intersects(., highest_crash_area, F))
 
-head(crashes_in_area)
+crashes_in_area
 ```
 
 ```{r}
 wh_crop <- raster::crop(wh_gray, raster::extent(highest_crash_area))
 
 raster::plot(wh_crop, col = gray.colors(50), legend =F)
-plot(crashes_in_area$geometry, add = T, pch = 21, bg = 'red', alpha = .1)
+plot(crashes_in_area$geom, add = T, pch = 21, bg = 'red', alpha = .1)
 ```
 

@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Load Data
 
 ```{r}
-h2015 <- lidR::readLAS('../Assets/Lidar_Data/h2015_wide.las')
+h2015 <- lidR::readLAS('../Assets/Lidar_Data/h2015_wide_sample.las')
 h2018 <- lidR::readLAS('../Assets/Lidar_Data/h2018_wide.las')
 ```
 
