@@ -5,7 +5,7 @@
 Contains RMD files used during the tutorial. Please ensure that the following packages are installed.
 
 ```
-install.packages(c('lidR', 'magrittr', 'raster', 'rayshader', sf'))
+install.packages(c('dplyr', 'knitr', 'lidR', 'magrittr', 'raster', 'rayshader', sf'))
 ```
 
 ## Data
